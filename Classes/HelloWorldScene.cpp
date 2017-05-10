@@ -412,23 +412,19 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
     PhysicsBody *a = contact.getShapeA()->getBody();
     PhysicsBody *b = contact.getShapeB()->getBody();
 
-    if (HUMAN_BITMASK == a->getCollisionBitmask() && PLAYER_BITMASK == b->getCollisionBitmask())
+    if ((PLAYER_BITMASK == a->getCollisionBitmask() && HUMAN_BITMASK == b->getCollisionBitmask()) ||
+        (PLAYER_BITMASK == b->getCollisionBitmask() && HUMAN_BITMASK == a->getCollisionBitmask()))
     {
         if( !creatingPlayer ){
             creatingPlayer = true;
         }
-        a->getNode()->removeFromParent();
-        for( auto &zomb: zombies ) {
-            zomb->attacking = true;
+        for( auto it = humans.begin(); it != humans.end( ); ++it ){
+            if(  (*it)->getPhysicsBody() == a || (*it)->getPhysicsBody() == b ){
+                (*it)->removeFromParent();
+                humans.erase(it);
+                return true;
+            }
         }
-        return true;
-    }
-    else if (HUMAN_BITMASK == b->getCollisionBitmask() && PLAYER_BITMASK == a->getCollisionBitmask())
-    {
-        if( !creatingPlayer ){
-            creatingPlayer = true;
-        }
-        b->getNode()->removeFromParent();
         for( auto &zomb: zombies ) {
             zomb->attacking = true;
         }
@@ -442,7 +438,6 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
                 zomb->is_onGround = true;
             }
         }
-//        zombi2->is_onGround = true;
         return true;
     }
     else if ((HUMAN_BITMASK == a->getCollisionBitmask() && GROUND_BITMASK == b->getCollisionBitmask()) ||
@@ -454,7 +449,6 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
              (PLAYER_BITMASK == b->getCollisionBitmask() && PLAYER_BITMASK == a->getCollisionBitmask()))
     {
 
-//        zombi2->is_onGround = true;
         return false;
     }
     else if ((PLAYER_BITMASK == a->getCollisionBitmask() && WATER_BITMASK == b->getCollisionBitmask()) ||
@@ -497,7 +491,6 @@ bool HelloWorld::onContactSeparate( cocos2d::PhysicsContact &contact)
                 zomb->is_onGround = false;
             }
         }
-//        zombi2->is_onGround = false;
     }
     return true;
 }
@@ -515,7 +508,6 @@ int HelloWorld::InitAnimationsForZombie( )
 
     char str[100] = {0};
 
-//    Vector<SpriteFrame*> idleAnimFrames(15);
     for (int i = 1; i <= 15; i++)
     {
         sprintf(str, "male/Idle (%i).png", i);
@@ -523,13 +515,7 @@ int HelloWorld::InitAnimationsForZombie( )
         frame->setAnchorPoint(Vec2(0.5, 0));
         idleAnimFrames.pushBack(frame);
     }
-//    idleAnimation = Animation::createWithSpriteFrames(idleAnimFrames, 0.1f);
-//    idleAnimate = Animate::create(idleAnimation);
-//    idleAnimate->retain();
-//    this->runAction(RepeatForever::create(idleAnimate));
 
-
-//    Vector<SpriteFrame*> walkAnimFrames(10);
     for(int i = 1; i <= 10; i++)
     {
         sprintf(str, "male/Walk (%i).png",i);
@@ -537,12 +523,7 @@ int HelloWorld::InitAnimationsForZombie( )
         frame->setAnchorPoint(Vec2(0.5, 0));
         walkAnimFrames.pushBack(frame);
     }
-//    walkAnimation = Animation::createWithSpriteFrames(walkAnimFrames, 0.1f);
-//    walkAnimate = Animate::create(walkAnimation);
-//    walkAnimate->retain();
 
-
-//    Vector<SpriteFrame*> attackAnimFrames(8);
     for(int i = 1; i <= 8; i++)
     {
         sprintf(str, "male/Attack (%i).png",i);
@@ -550,9 +531,6 @@ int HelloWorld::InitAnimationsForZombie( )
         frame->setAnchorPoint(Vec2(0.5, 0));
         attackAnimFrames.pushBack(frame);
     }
-//    attackAnimation = Animation::createWithSpriteFrames(attackAnimFrames, 0.1f);
-//    attackAnimate = Animate::create(attackAnimation);
-//    attackAnimate->retain();
 
     Vector<SpriteFrame*> jumpAnimFrames(5);
     for(int i = 1; i <= 5; i++)
@@ -562,9 +540,6 @@ int HelloWorld::InitAnimationsForZombie( )
         frame->setAnchorPoint(Vec2(0.5, 0));
         jumpAnimFrames.pushBack(frame);
     }
-//    jumpAnimation = Animation::createWithSpriteFrames(jumpAnimFrames, 0.3f);
-//    jumpAnimate = Animate::create(jumpAnimation);
-//    jumpAnimate->retain();
 
     return 0;
 }
@@ -573,8 +548,8 @@ int HelloWorld::CreatingHumans( Vec2 position )
 {
     auto human = Human::create();
     human->setPosition(position);
-//    zombi->setPosition(Vec2(673,1212));
     human->initCharacter();
+    humans.push_back(human);
     this->addChild(human, 7);
     return 0;
 }

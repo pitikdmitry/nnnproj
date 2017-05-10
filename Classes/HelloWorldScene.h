@@ -40,12 +40,6 @@ private:
 
     std::list<Zombi*> zombies;
     std::list<Human*> humans;
-    Zombi* zombi;
-    Zombi* zombi2;
-    Zombi* newZombi;
-    Human* human2;
-    Human* human;
-
 
 //    Animation* idleAnimation; //объект для анимации
 //    Animation* walkAnimation; //объект для анимации
@@ -66,7 +60,8 @@ private:
 
     int mapAmountOfObjets;
     std::string map_path;
-//
+
+    //карту устанавливаем
     std::string background_path;
     int setupMap();
     int settingUpGroundObjects( );

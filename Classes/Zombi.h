@@ -25,39 +25,36 @@ class Zombi: public cocos2d::Sprite
 public:
     Zombi( ): walking( false ), attacking( false ), idling( false ), jumping( false ), life( false ) {}
     static Zombi* create();
-//    void initCharacter( Animation* idleAnimation, Animation* walkAnimation, Animation* attackAnimation,
-//                        Animation* jumpAnimation, PhysicsBody* zombiBody );
+
+    //инициализация анимация
     void initCharacter( Vector<SpriteFrame*> idleAnimFrames, Vector<SpriteFrame*> walkAnimFrames, Vector<SpriteFrame*> attackAnimFrames,
                                Vector<SpriteFrame*> jumpAnimFrames, PhysicsBody* zombiBody2 );
 
     virtual void update();
 
-    void walk();
-    void attack();
-    void idle();
-    void jump();
-
     bool walking;
     bool attacking;
     bool idling;
     bool jumping;
-
     bool life;
 
     bool key_A;
     bool key_D;
-
     bool is_onGround;
+    int direction;
 
     Animate* idleAnimateZombi; //объект для анимации
     Animate* walkAnimateZombi;
     Animate* attackAnimateZombi;
     Animate* jumpAnimateZombi;
 
-    int direction;
-    enum{ idling_anim, walking_anim, attacking_anim, jumping_anim } current_anim;
-
 protected:
+    void walk();
+    void attack();
+    void idle();
+    void jump();
+
+    enum{ idling_anim, walking_anim, attacking_anim, jumping_anim } current_anim;
 
 private:
     unsigned int attackTimer;

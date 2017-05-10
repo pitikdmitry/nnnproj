@@ -51,10 +51,6 @@ void Zombi::initCharacter( Vector<SpriteFrame*> idleAnimFrames, Vector<SpriteFra
     jumpAnimateZombi = Animate::create(jumpAnimation);
     jumpAnimateZombi->retain();
 
-//    idleAnimateZombi = idleAnimate; //объект для анимации
-//    walkAnimateZombi = walkAnimate;
-//    attackAnimateZombi = attackAnimate;
-//    jumpAnimateZombi = jumpAnimate;
 }
 
 
