@@ -13,10 +13,18 @@ HelloWorld::HelloWorld()
 
     //путь до карты
     map_path = "map/map.tmx";
-    mapAmountOfObjets = 4;
+    mapAmountOfObjets = 23;
 
     //названия объектов на карте
-    groundObjects = { "object1", "object2", "object3", "object4", "water" };
+    char str[100] = {0};
+
+    for( int i = 1; i <= 23; ++i ){
+        sprintf(str, "object%i", i);
+        groundObjects.push_back(str);
+    }
+    groundObjects.push_back("water");
+//    groundObjects = { "object1", "object2", "object3", "object4", "object5",
+//                      "water" };
     background_path = "map/BG.png";
 }
 
@@ -115,7 +123,12 @@ int HelloWorld::settingUpGroundObjects( )
             polygon->setDynamic(false);
             polygon->setGravityEnable(false);
             polygon->setContactTestBitmask( true );
-            polygon->setCollisionBitmask( GROUND_BITMASK );
+            if( NameObject == "water"){
+                polygon->setCollisionBitmask( WATER_BITMASK );
+            }
+            else{
+                polygon->setCollisionBitmask( GROUND_BITMASK );
+            }
 
             //Создаем объект в который кладем твердое тело
             auto pol_node = Node::create();
@@ -240,40 +253,46 @@ bool HelloWorld::init()
         std::cout << "ERROR_INIT_ZOBIE_ANIM";
         return false;
     }
+
+    //Расставляем человеков на карте
+    Vec2 human1(600, 930);
+    Vec2 human2(1100, 700);
+    Vec2 human3(2330, 1470);
+    Vec2 human4(3100, 1050);
+    Vec2 human5(4430, 1500);
+    Vec2 human6(5000, 630);
+    Vec2 human7(6000, 1150);
+
+    error = CreatingHumans( human1 );
+    error = CreatingHumans( human2 );
+    error = CreatingHumans( human3 );
+    error = CreatingHumans( human4 );
+    error = CreatingHumans( human5 );
+    error = CreatingHumans( human6 );
+    error = CreatingHumans( human7 );
+    if( error != 0 )
+    {
+        std::cout << "ERROR_INIT_ZOBIE_ANIM";
+        return false;
+    }
+
+    auto zombi = Zombi::create();
+    zombi->initCharacter(idleAnimFrames, walkAnimFrames, attackAnimFrames, jumpAnimFrames, zombiBody);
+    zombi->setPosition(Vec2(1500, 1500));
+    zombies.push_back(zombi);
+    addChild(zombi);
+
+    //Камера, будет следить за игроком
+    camera = Follow::create(zombi);
+//    camera->setBoundary(-3 * size.width, 0, -size.height * 67 / 40, 0);
+    this->runAction( camera );
+    cameraFollowing = zombi;
+
+    creatingPlayer = false;
+
     //setting up music
     auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
     audio->playBackgroundMusic("ZHU – One Minute to Midnight.mp3", true);
-
-
-    auto zombi = Zombi::create();
-    zombi->setPosition(Vec2(_origin.x + _visibleSize.width / 2 + 100, _origin.y + _visibleSize.height / 2));
-//    zombi->setPosition(Vec2(673,1212));
-    zombi->initCharacter( idleAnimFrames, walkAnimFrames, attackAnimFrames, jumpAnimFrames, zombiBody);
-    zombies.push_back( zombi );
-    this->addChild(zombi, 5);
-
-
-
-
-    human = Human::create();
-    human->setPosition(Vec2(300,500));
-//    zombi->setPosition(Vec2(673,1212));
-    human->initCharacter();
-    this->addChild(human, 7);
-
-    human2 = Human::create();
-    human2->setPosition(Vec2(_origin.x + _visibleSize.width / 2 + 250, _origin.y + _visibleSize.height / 2));
-//    zombi->setPosition(Vec2(673,1212));
-    human2->initCharacter();
-    this->addChild(human2, 7);
-
-
-
-    //Камера, будет следить за игроком
-//    Follow* camera = Follow::create(zombi);
-//    camera->setBoundary(-3 * size.width, 0, -size.height * 67 / 40, 0);
-//    this->runAction( camera );
-    creatingPlayer = false;
 
     //Означает что будет постоянно вызывать метод update данного класса(в дланном случае HelloWorld
     //Но я не уверена
@@ -285,8 +304,8 @@ void HelloWorld::update(float dt)
 {
 //    zombi->update();
     if( creatingPlayer == true){
-        std::cout <<"A";
         createNewZombie( );
+        creatingPlayer = false;
     }
     for( auto it = zombies.begin( ); it != zombies.end( ); ++it ){
         (*it)->update( );
@@ -304,10 +323,6 @@ void HelloWorld::Pressed( EventKeyboard::KeyCode keyCode, Event* event )
                 zomb->direction = 0;
                 zomb->key_A = true;
             }
-
-//            zombi2->walking= true;
-//            zombi2->direction = 0;
-//            zombi2->key_A = true;
             break;
         case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
         case cocos2d::EventKeyboard::KeyCode::KEY_D:
@@ -316,17 +331,12 @@ void HelloWorld::Pressed( EventKeyboard::KeyCode keyCode, Event* event )
                 zomb->direction = 1;
                 zomb->key_D = true;
             }
-
-//            zombi2->walking = true;
-//            zombi2->direction = 1;
-//            zombi2->key_D = true;
             break;
         case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
         case cocos2d::EventKeyboard::KeyCode::KEY_W:
             for( auto &zomb: zombies ) {
                 zomb->jumping = true;
             }
-//            zombi2->jumping = true;
             break;
         case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
         case cocos2d::EventKeyboard::KeyCode::KEY_S:
@@ -385,24 +395,16 @@ void HelloWorld::Released( EventKeyboard::KeyCode keyCode, Event* event )
 
 int HelloWorld::createNewZombie( )
 {
-    creatingPlayer = false;
-    if( !zombies.empty() )
-    {
-        auto it = zombies.begin( );
-        Vec2 pos = (*it)->getPhysicsBody()->getPosition();
-        if( (*it)->direction == 1 ){
-            pos.x -= 70;
-        }
-        else{
-            pos.x += 70;
-        }
-        Zombi* zombi2 = Zombi::create();
-        zombi2->setPosition(pos);
-//    zombi->setPosition(Vec2(673,1212));
-        zombi2->initCharacter( idleAnimFrames, walkAnimFrames, attackAnimFrames, jumpAnimFrames, zombiBody);
-        zombies.push_back(zombi2);
-        this->addChild(zombi2, 5);
-    }
+    auto zombi = Zombi::create();
+    zombi->initCharacter(idleAnimFrames, walkAnimFrames, attackAnimFrames, jumpAnimFrames, zombiBody);
+    auto it = zombies.begin( );
+    Vec2 point2 = zombi->convertToWorldSpace((*it)->getPosition());
+    point2.y +=50;
+    zombi->setPosition(point2);
+    zombies.push_back(zombi);
+    addChild(zombi);
+
+    return 0;
 }
 
 bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
@@ -412,7 +414,6 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
 
     if (HUMAN_BITMASK == a->getCollisionBitmask() && PLAYER_BITMASK == b->getCollisionBitmask())
     {
-//        createNewZombie();
         if( !creatingPlayer ){
             creatingPlayer = true;
         }
@@ -420,12 +421,10 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
         for( auto &zomb: zombies ) {
             zomb->attacking = true;
         }
-//        zombi2->attacking = true;
         return true;
     }
     else if (HUMAN_BITMASK == b->getCollisionBitmask() && PLAYER_BITMASK == a->getCollisionBitmask())
     {
-//        createNewZombie();
         if( !creatingPlayer ){
             creatingPlayer = true;
         }
@@ -433,14 +432,15 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
         for( auto &zomb: zombies ) {
             zomb->attacking = true;
         }
-//        zombi2->attacking = true;
         return false;
     }
-    if ((PLAYER_BITMASK == a->getCollisionBitmask() && GROUND_BITMASK == b->getCollisionBitmask()) ||
+    else if ((PLAYER_BITMASK == a->getCollisionBitmask() && GROUND_BITMASK == b->getCollisionBitmask()) ||
         (PLAYER_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
     {
         for( auto &zomb: zombies ) {
-            zomb->is_onGround = true;
+            if( zomb->getPhysicsBody() == a || zomb->getPhysicsBody() == b ){
+                zomb->is_onGround = true;
+            }
         }
 //        zombi2->is_onGround = true;
         return true;
@@ -450,6 +450,38 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
     {
         return true;
     }
+    else if ((PLAYER_BITMASK == a->getCollisionBitmask() && PLAYER_BITMASK == b->getCollisionBitmask()) ||
+             (PLAYER_BITMASK == b->getCollisionBitmask() && PLAYER_BITMASK == a->getCollisionBitmask()))
+    {
+
+//        zombi2->is_onGround = true;
+        return false;
+    }
+    else if ((PLAYER_BITMASK == a->getCollisionBitmask() && WATER_BITMASK == b->getCollisionBitmask()) ||
+        (PLAYER_BITMASK == b->getCollisionBitmask() && WATER_BITMASK == a->getCollisionBitmask()))
+    {
+        auto it = zombies.begin( );
+        if( (*it)->getPhysicsBody() == a || (*it)->getPhysicsBody() == b ){
+            //GAME OVVEVERRERE
+            //GAME OVVEVERRERE
+            //GAME OVVEVERRERE
+            //GAME OVVEVERRERE
+
+        }
+        else{
+            ++it;
+            for( it; it != zombies.end( ); ++it ){
+                if(  (*it)->getPhysicsBody() == a || (*it)->getPhysicsBody() == b ){
+                    (*it)->removeFromParent();
+                    zombies.erase(it);
+                    return true;
+                }
+            }
+        }
+
+        return true;
+    }
+    return true;
 }
 
 bool HelloWorld::onContactSeparate( cocos2d::PhysicsContact &contact)
@@ -461,7 +493,9 @@ bool HelloWorld::onContactSeparate( cocos2d::PhysicsContact &contact)
         (PLAYER_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
     {
         for( auto &zomb: zombies ) {
-            zomb->is_onGround = false;
+            if( zomb->getPhysicsBody() == a || zomb->getPhysicsBody() == b ){
+                zomb->is_onGround = false;
+            }
         }
 //        zombi2->is_onGround = false;
     }
@@ -532,5 +566,15 @@ int HelloWorld::InitAnimationsForZombie( )
 //    jumpAnimate = Animate::create(jumpAnimation);
 //    jumpAnimate->retain();
 
+    return 0;
+}
+
+int HelloWorld::CreatingHumans( Vec2 position )
+{
+    auto human = Human::create();
+    human->setPosition(position);
+//    zombi->setPosition(Vec2(673,1212));
+    human->initCharacter();
+    this->addChild(human, 7);
     return 0;
 }

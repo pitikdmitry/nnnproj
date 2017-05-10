@@ -23,7 +23,7 @@ void Zombi::initCharacter( Vector<SpriteFrame*> idleAnimFrames, Vector<SpriteFra
     direction = 1;
     key_A = false;
     key_D = false;
-    life = true;
+    life = false;
 
     attackTimer = 0;
 

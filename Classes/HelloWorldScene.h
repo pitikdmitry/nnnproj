@@ -2,14 +2,16 @@
 #define __HELLOWORLD_SCENE_H__
 #include "Zombi.h"
 #include "Human.h"
-#include "InitCharacterAnimations.cpp"
 #include "cocos2d.h"
 USING_NS_CC;
 
 #define GROUND_BITMASK 0x0005
+#define WATER_BITMASK 0x0004
+
 #define GROUND_DENSITY 1000.0f
 #define GROUND_RESTITUTION 0.0000001f
 #define GROUND_FRICTION 5.0f
+
 
 class HelloWorld : public cocos2d::Layer
 {
@@ -60,6 +62,7 @@ private:
     std::vector<std::string> groundObjects;
     //камера
     Follow* camera;
+    Zombi* cameraFollowing;
 
     int mapAmountOfObjets;
     std::string map_path;
@@ -71,6 +74,7 @@ private:
     int settingUpBackGround( );
     int settingUpEventListeners( );
 
+    int CreatingHumans( Vec2 position );
     int InitAnimationsForZombie( );
     int createNewZombie( );
 
