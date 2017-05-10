@@ -1,9 +1,9 @@
 #ifndef __HELLOWORLD_SCENE_H__
 #define __HELLOWORLD_SCENE_H__
-
+#include "Zombi.h"
+#include "Human.h"
+#include "InitCharacterAnimations.cpp"
 #include "cocos2d.h"
-#include "Player.h"
-#include <vector>
 USING_NS_CC;
 
 #define GROUND_BITMASK 0x000002
@@ -11,50 +11,78 @@ USING_NS_CC;
 #define GROUND_RESTITUTION 0.0000001f
 #define GROUND_FRICTION 5.0f
 
-class HelloWorld : public cocos2d::Scene
+class HelloWorld : public cocos2d::Layer
 {
 public:
+    static cocos2d::Scene* createScene();
     HelloWorld();
 //    ~HelloWorld();
-    static cocos2d::Scene* createScene();
-
-    void update(float dt);
-    bool onContactBegin( cocos2d::PhysicsContact &contact);
-    bool onContactSeparate( cocos2d::PhysicsContact &contact);
 
     virtual bool init();
+    Sprite* player;
+
+    // implement the "static create()" method manually
+    CREATE_FUNC(HelloWorld);
+private:
+    //карта
+    TMXTiledMap *_map;
+    //центр карты
+    Point _map_centre;
+    //служебный режиссер кокоса
+    cocos2d::Director *_director;
+    //Размер окна
+    cocos2d::Size _visibleSize;
+    //смещение точки (0,0) нашего окна в пространственных координатах, но я не уверена
+    Vec2 _origin;
+
+    std::list<Zombi*> zombies;
+    std::list<Human*> humans;
+    Zombi* zombi;
+    Zombi* newZombi;
+    Human* human2;
+    Human* human;
+
+    bool creatingNewPlayer;
+
+//    Animation* idleAnimation; //объект для анимации
+//    Animation* walkAnimation; //объект для анимации
+//    Animation* attackAnimation; //объект для анимации
+//    Animation* jumpAnimation; //объект для анимации
+    Vector<SpriteFrame*> idleAnimFrames;
+    Vector<SpriteFrame*> walkAnimFrames;
+    Vector<SpriteFrame*> attackAnimFrames;
+    Vector<SpriteFrame*> jumpAnimFrames;
+    PhysicsBody* zombiBody;
+    //группа объекто твердых тел из карты
+    TMXObjectGroup *_objectGroup;
+    //массив с названиями объектов
+    std::vector<std::string> groundObjects;
+    //камера
+    Follow* camera;
+
+    int mapAmountOfObjets;
+    std::string map_path;
+//
+    std::string background_path;
+    int setupMap();
+    int settingUpGroundObjects( );
+    int settingUpEdgeBox( );
+    int settingUpBackGround( );
+    int settingUpEventListeners( );
+
+    int InitAnimationsForZombie( );
+    int createNewZombie( );
+
+    void update(float dt);
+
+    bool onContactBegin( cocos2d::PhysicsContact &contact);
+    bool onContactSeparate( cocos2d::PhysicsContact &contact);
 
     void Pressed( EventKeyboard::KeyCode keyCode, Event* event );
     void Released( EventKeyboard::KeyCode keyCode, Event* event );
 
-    CREATE_FUNC(HelloWorld);
-private:
-
-    TMXTiledMap *_map;
-    Point _map_centre;
-    TMXObjectGroup *_objectGroup;
-    std::vector<Player*> zombies;
-    Player* zombi;
-    cocos2d::Director *_director;
-    cocos2d::Size _visibleSize;
-    Vec2 _origin;
-    std::vector<std::string> groundObjects;
-//    Follow* camera;
-
-    int mapAmountOfObjets;
-    std::string map_path;
-
-    std::string background_path;
-    int setupMap();
-    int settingUpGroundObjects( );
-    int createNewZombie( );
-
     float _scale_map_x;
     float _scale_map_y;
-
-
 };
 
 #endif // __HELLOWORLD_SCENE_H__
-
-
