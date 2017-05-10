@@ -6,7 +6,7 @@
 #include "cocos2d.h"
 USING_NS_CC;
 
-#define GROUND_BITMASK 0x000002
+#define GROUND_BITMASK 0x0005
 #define GROUND_DENSITY 1000.0f
 #define GROUND_RESTITUTION 0.0000001f
 #define GROUND_FRICTION 5.0f
@@ -20,6 +20,7 @@ public:
 
     virtual bool init();
     Sprite* player;
+    bool creatingPlayer;
 
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
@@ -38,11 +39,11 @@ private:
     std::list<Zombi*> zombies;
     std::list<Human*> humans;
     Zombi* zombi;
+    Zombi* zombi2;
     Zombi* newZombi;
     Human* human2;
     Human* human;
 
-    bool creatingNewPlayer;
 
 //    Animation* idleAnimation; //объект для анимации
 //    Animation* walkAnimation; //объект для анимации

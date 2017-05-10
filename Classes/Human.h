@@ -9,7 +9,7 @@
 #define HUMAN_SPRITE_WIDTH 82
 #define HUMAN_SPRITE_WIDTH 90
 
-#define HUMAN_BITMASK 0x000003
+#define HUMAN_BITMASK 0x000002
 
 class Human : public Zombi {
 public:
