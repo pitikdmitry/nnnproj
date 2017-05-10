@@ -1,6 +1,8 @@
 #include "HelloWorldScene.h"
 #include <iostream>
 #include "SimpleAudioEngine.h"
+#include "GameOver.h"
+#include "YouWinScene.h"
 
 
 HelloWorld::HelloWorld()
@@ -10,6 +12,8 @@ HelloWorld::HelloWorld()
     _director = nullptr;
     _visibleSize = Size::ZERO;
     _origin = Vec2::ZERO;
+
+    count = 0;
 
     //путь до карты
     map_path = "map/map.tmx";
@@ -23,8 +27,7 @@ HelloWorld::HelloWorld()
         groundObjects.push_back(str);
     }
     groundObjects.push_back("water");
-//    groundObjects = { "object1", "object2", "object3", "object4", "object5",
-//                      "water" };
+    //groundObjects.push_back("win");
     background_path = "map/BG.png";
 }
 
@@ -39,7 +42,7 @@ Scene* HelloWorld::createScene()
     //граивтация
     scene->getPhysicsWorld()->setGravity(Vect(0.f, -10000.0f));
     //обводка твердых тел
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+  //  scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
     auto layer = HelloWorld::create();
     scene->addChild(layer);
     return scene;
@@ -135,7 +138,7 @@ int HelloWorld::settingUpGroundObjects( )
             pol_node->setPhysicsBody(polygon);
             this->addChild(pol_node, 1);
         }
-        catch (std::out_of_range &err)
+        catch (std::out_of_range)
         {
             std::cout << "ERROR_IN_SETTING_UP_OBEJCTS";
             return 0;
@@ -256,12 +259,12 @@ bool HelloWorld::init()
 
     //Расставляем человеков на карте
     Vec2 human1(600, 930);
-    Vec2 human2(1100, 700);
-    Vec2 human3(2330, 1470);
-    Vec2 human4(3100, 1050);
-    Vec2 human5(4430, 1500);
-    Vec2 human6(5000, 630);
-    Vec2 human7(6000, 1150);
+    Vec2 human2(1500, 700);
+    Vec2 human3(2550, 1470);
+    Vec2 human4(3700, 1050);
+    Vec2 human5(4600, 1500);
+    Vec2 human6(5200, 900);
+    Vec2 human7(5400, 1150);
 
     error = CreatingHumans( human1 );
     error = CreatingHumans( human2 );
@@ -281,6 +284,7 @@ bool HelloWorld::init()
     zombi->setPosition(Vec2(1500, 1500));
     zombies.push_back(zombi);
     addChild(zombi);
+    //if (zombi->getPosition(7100,))
 
     //Камера, будет следить за игроком
     camera = Follow::create(zombi);
@@ -309,6 +313,11 @@ void HelloWorld::update(float dt)
     }
     for( auto it = zombies.begin( ); it != zombies.end( ); ++it ){
         (*it)->update( );
+    }
+    if(count >= 7) {
+        CCScene *mScene = YouWinScene::createScene();
+
+        CCDirector::sharedDirector()->replaceScene(mScene);
     }
 }
 
@@ -422,6 +431,7 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
             if(  (*it)->getPhysicsBody() == a || (*it)->getPhysicsBody() == b ){
                 (*it)->removeFromParent();
                 humans.erase(it);
+                count++;
                 return true;
             }
         }
@@ -429,9 +439,10 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
             zomb->attacking = true;
         }
         return false;
+
     }
     else if ((PLAYER_BITMASK == a->getCollisionBitmask() && GROUND_BITMASK == b->getCollisionBitmask()) ||
-        (PLAYER_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
+             (PLAYER_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
     {
         for( auto &zomb: zombies ) {
             if( zomb->getPhysicsBody() == a || zomb->getPhysicsBody() == b ){
@@ -441,7 +452,7 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
         return true;
     }
     else if ((HUMAN_BITMASK == a->getCollisionBitmask() && GROUND_BITMASK == b->getCollisionBitmask()) ||
-        (HUMAN_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
+             (HUMAN_BITMASK == b->getCollisionBitmask() && GROUND_BITMASK == a->getCollisionBitmask()))
     {
         return true;
     }
@@ -452,15 +463,14 @@ bool HelloWorld::onContactBegin( cocos2d::PhysicsContact &contact)
         return false;
     }
     else if ((PLAYER_BITMASK == a->getCollisionBitmask() && WATER_BITMASK == b->getCollisionBitmask()) ||
-        (PLAYER_BITMASK == b->getCollisionBitmask() && WATER_BITMASK == a->getCollisionBitmask()))
+             (PLAYER_BITMASK == b->getCollisionBitmask() && WATER_BITMASK == a->getCollisionBitmask()))
     {
         auto it = zombies.begin( );
         if( (*it)->getPhysicsBody() == a || (*it)->getPhysicsBody() == b ){
-            //GAME OVVEVERRERE
-            //GAME OVVEVERRERE
-            //GAME OVVEVERRERE
-            //GAME OVVEVERRERE
 
+            CCScene *mScene = GameOverScene::createScene();
+
+            CCDirector::sharedDirector()->replaceScene(mScene);
         }
         else{
             ++it;
@@ -494,6 +504,7 @@ bool HelloWorld::onContactSeparate( cocos2d::PhysicsContact &contact)
     }
     return true;
 }
+
 
 int HelloWorld::InitAnimationsForZombie( )
 {

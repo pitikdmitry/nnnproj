@@ -28,7 +28,7 @@ public:
 
     //инициализация анимация
     void initCharacter( Vector<SpriteFrame*> idleAnimFrames, Vector<SpriteFrame*> walkAnimFrames, Vector<SpriteFrame*> attackAnimFrames,
-                               Vector<SpriteFrame*> jumpAnimFrames, PhysicsBody* zombiBody2 );
+                        Vector<SpriteFrame*> jumpAnimFrames, PhysicsBody* zombiBody2 );
 
     virtual void update();
 

@@ -64,5 +64,5 @@ void Human::initCharacter()
     auto walkAnimation = Animation::createWithSpriteFrames(walkAnimFrames, 0.1f);
     walkAnimateZombi = Animate::create(walkAnimation);
     walkAnimateZombi->retain();
-    
+
 }

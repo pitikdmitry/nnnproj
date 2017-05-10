@@ -83,6 +83,8 @@ private:
 
     float _scale_map_x;
     float _scale_map_y;
+
+    int count;
 };
 
 #endif // __HELLOWORLD_SCENE_H__
